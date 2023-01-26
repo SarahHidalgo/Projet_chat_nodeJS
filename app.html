@@ -1,0 +1,341 @@
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles/styleApp.css" type="text/css" />
+    <title>NodeJS Chat App</title>
+  </head>
+  <body>
+
+    <div class="affichage_users">
+      <div id="users" style="visibility: hidden">
+        <h1 id="title_chats"> Users : </h1>
+        <div id="search">
+          <img src="loupe.png" id="loupe">
+          <input type="text" name="search" value=" Search..." id="input_search">
+        </div>
+        <ul id="listusers">
+        </ul>
+      </div>
+    </div>
+
+    <div class="display_send" style="visibility: hidden">
+      <h3 id="title_chat_principal">
+        Chat Principal
+      </h3>
+      <div class="affichage_messages" id="aff_msg">
+        <div id="messages">
+            <div class="message" id="msgtpl">
+
+            </div>
+            <div class="message_log" >
+
+            </div>
+            <div class="message_pv" id="msg_pv">
+
+            </div>
+        </div>
+      </div>
+      <form action="" id="form" >
+        <input type="text" id="message" class="text" />
+        <input type="submit" id="send" value="Send" class="submit" />
+      </form>
+    </div>
+
+    <div id="login">
+      <form action="" id="loginform">
+        <div>
+          <img src="pp.jpg" id="choosen_avatar">
+        </div>
+        <p> Choisissez votre avatar : </p>
+        <div class="avatars">
+          <img class="avatar_user" src="logo1.jpg" id='1' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo2.jpg" id='2' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo3.jpg" id='3' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo4.jpg" id='4' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo5.jpg" id='5' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo6.jpg" id='6' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo7.jpg" id='7' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo8.jpg" id='8' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="logo9.jpg" id='9' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="plus.png"  onclick="window.open(file://C:/Users)">
+        </div>
+        <input class ="formulaire" type="text" name="login" id="username" placeholder="Nom d'utilisateur"/>
+        <input class ="formulaire" type="password" name="mdp" id="mdp" placeholder="Mot de Passe"/>
+        <input class ="formulaire" type="submit" id="submit-login" value="Envoyer"/>
+      </form>
+    </div>
+
+    <div class="affichage_chanels" style="visibility: hidden">
+      <div class="chanels">
+        <h1 id="title_chats"> Chanels : </h1>
+        <div class="principal" onclick="handleClickPrincipal()">
+          <img src="pp_princi.jpg" id="img_principal">
+          <p color='white'>Chanel Principal</p>
+        </div>
+      </div>
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  </body>
+</html>
+<script type="text/javascript" src="/socket.io/socket.io.js"> </script>
+<script>
+  // partie décrite comme client.js
+
+  //logo par défaut
+  var id_div=1;
+
+  //gestion du click sur le logo
+  function handleClick(id){
+    if (id_div!=id){
+      document.getElementById(id).style.filter = "grayscale(100%)";
+      document.getElementById(id_div).style.filter = "grayscale(0%)";
+    }
+    else{
+      document.getElementById(id).style.filter = "grayscale(100%)";
+    }
+    id_div=id;
+    document.getElementById("choosen_avatar").src = "logo"+id_div+".jpg";
+  }
+
+  /*Blocs non afficher au lancé de la page*/
+  $(".affichage_users").fadeOut();
+  $(".affichage_chanels").fadeOut();
+  $(".display_send").fadeOut();
+
+  var socket = io();
+
+ /*Savoir si on est dans un salon privé ou non */
+  var private_talk = false;
+  /*id user à envoyer un msg*/
+  var private_talk_user=null;
+
+  /** Connexion d'un utilisateur via le formulaire
+  * Uniquement si le username n'est pas vide et n'existe pas encore
+  */
+  $('#loginform').submit(function(event){
+    event.preventDefault();
+    var user = {
+      username : $('#username').val(),
+      avatar: id_div,
+      socketId : socket.id,
+      mdp : $('#mdp').val()
+    };
+    if (user.username.length > 0) { // Si le champ de connexion n'est pas vide
+      socket.emit('user-login', user, function (success) {
+        if (success) {
+          $("#login").fadeOut(); // supprimer la partie pour se login car on vient de le faire
+          $(".display_send").css("visibility","visible"); // affiche la barre de text
+          $(".affichage_chanels").css("visibility","visible"); // affiche la barre de text
+          $("#users").css("visibility","visible"); // affiche la barre de text
+          $('#message').focus(); // Focus sur le champ du message
+          $(".affichage_users").fadeIn();
+          $(".affichage_chanels").fadeIn();
+          $(".display_send").fadeIn();
+          //io.emit('displayHistoric',messages);
+        }
+      });
+    }
+  })
+
+  /*Appui sur le bouton Send*/
+  $("#form").submit(function (event) {
+    event.preventDefault();
+    var message = {
+      text : $("#message").val(),
+      to : private_talk_user,
+    }
+    $("#message").val(""); // On vide le champ texte
+    if (message.text.trim().length !== 0) { // Gestion message vide
+      if (!private_talk){
+        socket.emit("newMsg", message);
+      }
+      else{
+        socket.emit("private_msg",message);
+        console.log("private"); // ok
+      }
+    }
+    $("#message").focus(); // Focus sur le champ du message
+  });
+
+  /** Scroll vers le bas de page si l'utilisateur n'est pas remonté pour lire d'anciens messages*/
+  function scrollToBottom() {
+    if ($(window).scrollTop() + $(window).height() + 2 * $('#messages div').last().outerHeight() >= $(document).height()) {
+      $("html, body").animate({ scrollTop: $(document).height() }, 0);
+    }
+  }
+
+
+  /** Reception du message de connection/déconnection*/
+  socket.on("service-message", (serviceMessage)=>{
+    var status = message.type;
+    $(".message_log").append('<p class="service">'+ serviceMessage.text + "</p>");
+    $(".service").delay(10000).fadeOut(function() {
+       $(this).empty(); // fait disparaître le message du client connecté après 5000ms
+    });
+    scrollToBottom();
+    var objDiv = document.getElementById("aff_msg");
+    objDiv.scrollTop = objDiv.scrollHeight;
+  });
+
+  /** Réception d'un message du chat principal*/
+  socket.on("handleNewMsg", (msg) => {
+      $('#msg_pv').fadeOut();
+      const d = new Date();
+      let hour = d.getHours();
+      let minutes =d.getMinutes();
+      if (socket.id== msg.socketId){
+        $(".message").append(
+          `<div id="flex_end"><div class= "own_msg"><p>${msg.text}</p>`+ "       "+
+          `</div><div class="info_msg"><img id="user_logo_msg" src="logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
+          ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
+        );
+      }
+      else {
+        $(".message").append(
+          `<div id="flex_start"><div class= "received_msg"><p>${msg.text}</p>`+ "       "+
+          `</div><div class="info_msg"><img id="user_logo_msg" src="logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
+          ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
+        );
+      }
+      scrollToBottom();
+      // permet de garder la scroll bar en bas !!!
+      if (document.getElementById("msgtpl").scrollHeight>document.getElementById("messages").offsetHeight){
+        var objDiv = document.getElementById("aff_msg");
+        objDiv.scrollTop = objDiv.scrollHeight;
+      }
+
+  });
+
+  /*Clique sur chat principal*/
+  function handleClickPrincipal(){
+    console.log("click principal");
+    private_talk=false;
+    $('#msgtpl').fadeIn();
+    $('#msg_pv').fadeOut();
+    $('#title_chat_principal').fadeIn();
+  }
+
+  /**
+   * Historique des messages pv
+   */
+  var messagesUser = [];
+
+  /*Gère l'envoie de chats pv*/
+  socket.on("private message", (msg) => {
+    /** Emission de chaque message de l'historique*/
+    for (i = 0; i < messagesUser.length; i++) {
+      socket.emit("private message", messagesUser[i]);
+    }
+    messagesUser.push(msg);
+    const d = new Date();
+    let hour = d.getHours();
+    let minutes =d.getMinutes();
+    if (socket.id== msg.from){
+      $(".message_pv").append(
+        `<div id="flex_end"><div class= "own_msg"><p>${msg.text}</p>`+ "       "+
+        `</div><div class="info_msg"><span> ${msg.username} </span>`+
+        ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
+      );
+    }
+    else {
+      console.log("msg privé récu");
+      //$("#msg_pv").fadeOut();
+      $(".message_pv").append(
+        `<div id="flex_start"><div class= "received_msg"><p>${msg.text}</p>`+ "       "+
+        `</div><div class="info_msg"><span> ${msg.username} </span>`+
+        ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
+      );
+    }
+    scrollToBottom();
+    // permet de garder la scroll bar en bas !!!
+    if (document.getElementById("msgtpl").scrollHeight>document.getElementById("messages").offsetHeight){
+      var objDiv = document.getElementById("aff_msg");
+      objDiv.scrollTop = objDiv.scrollHeight;
+    }
+  });
+
+  //gestion du click sur le user pour parler en pv
+  function handleClickUser(id,classe){
+    if (socket.id!=id){
+      console.log("Je suis en chat privée !!");
+      private_talk_user=id;
+      $(".message_pv").append("<div> Chat privé avec : "+ classe +" </div>");
+      $("#msgtpl").fadeOut();
+      $('#msg_pv').fadeIn();
+      $('#title_chat_principal').fadeOut();
+      private_talk=true;
+      /** Emission d'un événement "chat-message" pour chaque message de l'historique*/
+      for (i = 0; i < messagesUser.length; i++) {
+        socket.emit("private message", messagesUser[i]);
+      }
+      $("#listusers ."+classe).css("background-color","rgb(90, 111, 128)");
+      setTimeout(function () {
+        $('#listusers .'+classe).css("background-color","RGB(180, 218, 229)");
+      }, 1000);
+    }
+  }
+
+
+  /** Connection d'un nouvel utilisateur */
+  socket.on("updateUsersin", (user) => {
+      var name = user.username;
+      $("#listusers").append($('<li class="' + user.username + ' new" id="'+ user.socketId +'" onclick="handleClickUser(this.id,this.getAttribute(`class`))" >').html('<div class="name_typing"><span class="typing"> is typing </span><div class="service">'+ user.username + '</div></div><div><img id="user_logo" src="logo'+user.avatar+'.jpg"></div>'));
+      setTimeout(function () {
+        $('#listusers li.new').removeClass('new');
+      }, 1000);
+  });
+
+  /** Déconnection d'un utilisateur */
+  socket.on("updateUsersout", (user) => {
+      var selector = '#listusers li.' + user.username;
+      $(selector).remove();
+  });
+
+
+  /*Display historique*/
+  socket.on("dispalyHistoric", (messages)=>{
+    /** Emission d'un événement "chat-message" pour chaque message de l'historique*/
+    for (i = 0; i < messages.length; i++) {
+      socket.emit("handleNewMsg", messages[i]);
+    }
+  })
+
+
+  /** Gestion saisie des autres utilisateurs */
+  socket.on('update-typing', function (typingUsers) {
+    $('#listusers li span.typing').hide();
+    for (i = 0; i < typingUsers.length; i++) {
+      $('#listusers li.' + typingUsers[i].username + ' span.typing').show();
+    }
+  });
+
+    /** Détection saisie utilisateur */
+    var typingTimer;
+    var isTyping = false;
+
+    $('#message').keypress(function () {
+      clearTimeout(typingTimer);
+      if (!isTyping) {
+        socket.emit('start-typing');
+        isTyping = true;
+      }
+    });
+
+    $('#message').keyup(function () {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(function () {
+        if (isTyping) {
+          socket.emit('stop-typing');
+          isTyping = false;
+        }
+      }, 500); // setTimeout afin d'autoriser un délais de 0.5 secondes entre la frappe de chaque touche
+    });
+
+    /*Alertes lors d'une mauvaise tentative de connection*/
+    socket.on('Alert_mdp', function(){
+      alert("Votre mot de passe n'est pas valide, vérfiez que vous avez bien rentré un mot de passe !");
+    })
+    socket.on('Alert_identifiant', function(){
+      alert("Votre identifiant n'est pas valide, vérfiez que vous avez bien rentrer identifiant. Si oui, cette identifiant doit être déjà utilisé, veuillez en choisir un autre.");
+    })
+</script>
