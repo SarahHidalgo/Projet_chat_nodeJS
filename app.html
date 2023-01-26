@@ -10,7 +10,7 @@
       <div id="users" style="visibility: hidden">
         <h1 id="title_chats"> Users : </h1>
         <div id="search">
-          <img src="loupe.png" id="loupe">
+          <img src="images/loupe.png" id="loupe">
           <input type="text" name="search" value=" Search..." id="input_search">
         </div>
         <ul id="listusers">
@@ -33,6 +33,13 @@
             <div class="message_pv" id="msg_pv">
 
             </div>
+            <div class="ajout_user_in_chanel" onclick="handleClickAddChanel()">
+              <div class="user_connected">
+
+              </div>
+              <input class ="formulaire" type="text" name="login" id="chanel_name" placeholder="Nom du chanel"/>
+              <input class ="formulaire" type="submit" id="submit-create" value="Créer"/>
+            </div>
         </div>
       </div>
       <form action="" id="form" >
@@ -44,20 +51,20 @@
     <div id="login">
       <form action="" id="loginform">
         <div>
-          <img src="pp.jpg" id="choosen_avatar">
+          <img src="images/pp.jpg" id="choosen_avatar">
         </div>
         <p> Choisissez votre avatar : </p>
         <div class="avatars">
-          <img class="avatar_user" src="logo1.jpg" id='1' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo2.jpg" id='2' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo3.jpg" id='3' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo4.jpg" id='4' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo5.jpg" id='5' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo6.jpg" id='6' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo7.jpg" id='7' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo8.jpg" id='8' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="logo9.jpg" id='9' onclick="handleClick(this.id)">
-          <img class="avatar_user" src="plus.png"  onclick="window.open(file://C:/Users)">
+          <img class="avatar_user" src="images/logo1.jpg" id='1' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo2.jpg" id='2' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo3.jpg" id='3' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo4.jpg" id='4' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo5.jpg" id='5' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo6.jpg" id='6' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo7.jpg" id='7' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo8.jpg" id='8' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/logo9.jpg" id='9' onclick="handleClick(this.id)">
+          <img class="avatar_user" src="images/plus.png"  onclick="window.open(file://C:/Users)">
         </div>
         <input class ="formulaire" type="text" name="login" id="username" placeholder="Nom d'utilisateur"/>
         <input class ="formulaire" type="password" name="mdp" id="mdp" placeholder="Mot de Passe"/>
@@ -69,8 +76,11 @@
       <div class="chanels">
         <h1 id="title_chats"> Chanels : </h1>
         <div class="principal" onclick="handleClickPrincipal()">
-          <img src="pp_princi.jpg" id="img_principal">
+          <img src="images/pp_princi.jpg" id="img_principal">
           <p color='white'>Chanel Principal</p>
+        </div>
+        <div class="ajout_chanel" >
+          <p color='white'>Ajout chanels</p>
         </div>
       </div>
     </div>
@@ -94,13 +104,14 @@
       document.getElementById(id).style.filter = "grayscale(100%)";
     }
     id_div=id;
-    document.getElementById("choosen_avatar").src = "logo"+id_div+".jpg";
+    document.getElementById("choosen_avatar").src = "images/logo"+id_div+".jpg";
   }
 
   /*Blocs non afficher au lancé de la page*/
   $(".affichage_users").fadeOut();
   $(".affichage_chanels").fadeOut();
   $(".display_send").fadeOut();
+  $(".ajout_user_in_chanel").fadeOut();
 
   var socket = io();
 
@@ -136,6 +147,39 @@
       });
     }
   })
+
+  /*Code non terminé pour afficher les diff chanels*/
+  /*Dispaly users en ligne pour choisir qui ajouter dans le chanel*/
+  /*socket.on("ajout_users",(users)=>{
+    for (i = 0; i < users.length; i++) {
+      $("#user_connected").append('<div><div class="service">'+ users[i].username + '</div><img id="user_logo" src="images/logo'+user[i].avatar+'.jpg"><div id="'+ users[i].socketId +' onclick="handleClickUserChanel(this.id,'+users[i]+')"> Add </div></div>');
+    }
+  });*/
+
+  /*Ajout user dans le chanel créer */
+  /*var UsersInChanel=[];
+  handleClickUserChanel(id,user){
+    UsersInChanel.push(user);
+  }*/
+
+ /*Ajout de chanel*/
+ /*handleClickAddChanel(){
+   $(".ajout_user_in_chanel").fadeIn();
+   socket.emit("ajout_user_to_chanel");
+ }*/
+
+ /*$(".ajout_user_in_chanel").submit(funciton(event){
+   event.preventDefault();
+   var chanel ={
+     chl_name : $('#chanle_name').val();
+     chanel_users : UsersInChanel,
+   };
+   if (chl_name.length > 0) { // Si le champ de nom n'est pas vide
+     //socket.emit('in_chanel', chanel);
+     $('#msgtpl').fadeOut();
+     $('#msg_pv').fadeOut();
+   }
+ })*/
 
   /*Appui sur le bouton Send*/
   $("#form").submit(function (event) {
@@ -186,14 +230,14 @@
       if (socket.id== msg.socketId){
         $(".message").append(
           `<div id="flex_end"><div class= "own_msg"><p>${msg.text}</p>`+ "       "+
-          `</div><div class="info_msg"><img id="user_logo_msg" src="logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
+          `</div><div class="info_msg"><img id="user_logo_msg" src="images/logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
           ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
         );
       }
       else {
         $(".message").append(
           `<div id="flex_start"><div class= "received_msg"><p>${msg.text}</p>`+ "       "+
-          `</div><div class="info_msg"><img id="user_logo_msg" src="logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
+          `</div><div class="info_msg"><img id="user_logo_msg" src="images/logo`+msg.avatar+`.jpg"><span> ${msg.username} </span>`+
           ` <span> `+hour+ ":"+minutes+" " +` </span> </div></div>`
         );
       }
@@ -279,7 +323,7 @@
   /** Connection d'un nouvel utilisateur */
   socket.on("updateUsersin", (user) => {
       var name = user.username;
-      $("#listusers").append($('<li class="' + user.username + ' new" id="'+ user.socketId +'" onclick="handleClickUser(this.id,this.getAttribute(`class`))" >').html('<div class="name_typing"><span class="typing"> is typing </span><div class="service">'+ user.username + '</div></div><div><img id="user_logo" src="logo'+user.avatar+'.jpg"></div>'));
+      $("#listusers").append($('<li class="' + user.username + ' new" id="'+ user.socketId +'" onclick="handleClickUser(this.id,this.getAttribute(`class`))" >').html('<div class="name_typing"><span class="typing"> is typing </span><div class="service">'+ user.username + '</div></div><div><img id="user_logo" src="images/logo'+user.avatar+'.jpg"></div>'));
       setTimeout(function () {
         $('#listusers li.new').removeClass('new');
       }, 1000);
