@@ -18,7 +18,7 @@ Ces deux fonctionnalités quant à elles, n'ont pas pu être terminées dans les
 **Pour lancer l'application**
 
 Il est nécessaire de rajouter les modules "express" et "socket.io" avec la commande :
-npm install express@4
+npm install express
 npm install socket.io
 
 Pour lancer l'appli à partir du terminal, il suffit de se mettre dans le dossier à la racine du projet et écrire la commande "node app.js". L'application se lancera qur la localhost 3000. Il suffit donc après de s'y rendre pour tester.
