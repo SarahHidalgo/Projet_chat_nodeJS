@@ -1,4 +1,5 @@
-À propos du projet
+**À propos du projet**
+
 Nous avons réalisé une application de chat avec nodeJS. Celle ci permet de communiquer entre plusieurs utilisateurs différents.
 
 Les fonctionnalités présentes dans notre appliction sont :
@@ -14,6 +15,7 @@ Ces deux fonctionnalités quant à elles, n'ont pas pu être terminées dans les
 - Possibilité de créer des channels/salons de discussions
 - Afficher la liste des channels/messages privés de l'utilisateur
 
+**Pour lancer l'application**
 
 Il est nécessaire de rajouter les modules "express" et "socket.io" avec la commande :
 npm install express@4
