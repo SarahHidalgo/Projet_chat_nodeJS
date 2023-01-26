@@ -1,6 +1,6 @@
 body {
   display: flex;
-  background-image: url("/wallpaper.jpg");
+  background-image: url("/images/wallpaper.jpg");
   background-position: center;
   background-size: cover;
   flex-direction: row;
@@ -51,6 +51,19 @@ body {
    background-color: rgba(0, 0, 0, 0.4);
    flex:1;
  }
+ .ajout_chanel{
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   border-radius : 25px;
+   margin : 5px;
+   height: 30px;
+   border-style: solid;
+   border-width: thin;
+   border-color: white;
+   background-color: rgb(76, 65, 63);
+   color: rgb(236, 227, 212);
+ }
  .principal{
    color: white;
    display: flex;
@@ -76,10 +89,6 @@ body {
   border-radius : 75px;
   margin-right: 5px;
 }
-/*.avatars img : hover{
-  filter: grayscale(100%);
-  transition: all 0.2s ease-in-out;
-}*/
 
 /*Affichage liste users*/
 .affichage_users{
@@ -250,7 +259,7 @@ body {
   color: rgb(236, 227, 212);
 }
 
-/*???*/
+
 .message{
   padding: 5px;
 }
@@ -302,7 +311,6 @@ p{
   white-space: normal;
   margin: 0;
   padding: 0;
-  color: rgb(236, 227, 212);
 }
 span{
   flex-wrap: wrap;
@@ -334,6 +342,7 @@ span{
   margin: 7px;
   margin-bottom: 10px;
   border-width: thin;
+  border-style: solid;
   border-color: rgb(76, 65, 63);
 }
 #loupe{
@@ -345,6 +354,7 @@ span{
 #input_search{
   flex: 7;
   border: none;
+  color: rgb(76, 65, 63);
 }
 
 /*Affichage fonction is typing*/
