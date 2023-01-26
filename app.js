@@ -48,10 +48,6 @@ io.sockets.on('connection', function (socket) {
         text: 'User "' + current_user.username + '" logged in'
       };
       socket.broadcast.emit('service-message', serviceMessage);
-      /*/** Emission d'un événement "chat-message" pour chaque message de l'historique*/
-      /*for (i = 0; i < messages.length; i++) {
-        socket.emit("newMsg", messages[i]);
-      }*/
       // Emission de 'updateUsersin' et appel du callback
       io.emit('updateUsersin', current_user);
       callback(true);
@@ -69,12 +65,12 @@ io.sockets.on('connection', function (socket) {
     }
   });
 
-  /** Emission d'un événement "user-login" pour chaque utilisateur connecté*/
+  /** Emission d'un événement "updateUsersin" pour chaque utilisateur connecté*/
   for (i = 0; i < users.length; i++) {
     socket.emit('updateUsersin', users[i]);
   }
 
-  /** Emission d'un événement "chat-message" pour chaque message de l'historique*/
+  /** Emission d'un événement "handleNewMsg" pour chaque message de l'historique*/
   for (i = 0; i < messages.length; i++) {
     socket.emit("handleNewMsg", messages[i]);
   }
@@ -119,6 +115,9 @@ io.sockets.on('connection', function (socket) {
      }
    });
 
+   /**
+   * Réception de l'événement 'private_msg' et réémission vers l'utilisateur receveur et envoyeur
+   */
    socket.on("private_msg", (message) => {
     message.from = socket.id;
     message.avatar= current_user.avatar;
@@ -128,7 +127,6 @@ io.sockets.on('connection', function (socket) {
     io.to(message.from).emit("private message",message);
     //socket.to(message.to).emit("private message",message);
   });
-
 
 
    /** Déconnexion d'un utilisateur : broadcast d'un 'service-message'*/
